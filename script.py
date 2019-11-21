@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 import _sqlite3
 from random import randint
-import time
 import datetime
 
 
@@ -23,7 +22,7 @@ class Login_Signin(object):
     def get_passcode(self):
         self.database()
         self.layout = [[sg.Text("Login to your Account or type in desired Username and Password and press Sign in")], [sg.Text("Username"), sg.InputText()], [sg.Text("Password"), sg.InputText()],
-                       [sg.Button("Login"), sg.Button("Sign in"), sg.Button("Forgot Password"), sg.Exit()]]
+                       [sg.Button("Login"), sg.Button("Sign in"), sg.Button("Forgot Password"), sg.Button("Delete Account"), sg.Exit()]]
         self.window = sg.Window("Login", self.layout)
 
         while True:
@@ -34,6 +33,33 @@ class Login_Signin(object):
             if event in (None, "Exit"):
                 break
                 self.window.close()
+
+            elif event in ("Delete Account"):
+                self.security_question_delete = [
+                    [sg.Text("Type in the answer for your security question.")], [sg.InputText()], [sg.Button("OK"), sg.Button("Exit")]]
+                self.window_sq_delete = sg.Window(
+                    "Delete", self.security_question_delete)
+                while True:
+                    event, values = self.window_sq_delete.read()
+                    self.answersq_delete = str(values[0])
+                    if event in (None, "Exit"):
+                        self.window_sq_delete.close()
+                        break
+
+                    elif event in ("OK"):
+                        self.cur.execute(
+                            "SELECT sq FROM passcode WHERE username = ? AND sq = ?", (self.text_input1, self.answersq_delete))
+                        self.get_sq = self.cur.fetchone()
+                        if self.get_sq is None:
+                            sg.popup("Wrong, please try again")
+                        else:
+                            self.window_sq_delete.close()
+                            self.cur.execute(
+                                "DELETE FROM passcode WHERE username = ?", (self.text_input1,))
+                            self.conn.commit()
+                            sg.popup("Account is deleted")
+                            self.window.close()
+                            break
 
             elif event in ("Login"):
                 sg.popup("You entered", self.text_input1, self.text_input2)
@@ -177,7 +203,7 @@ class Login_Signin(object):
 
 
 test = Login_Signin()
-print(test.mainmenue())
+print(test.get_passcode())
 # print(test.account_settings(
 
 """from PySimpleGUI import Text, CBox, Input, Button, Window"""

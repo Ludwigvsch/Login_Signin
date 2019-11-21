@@ -2,6 +2,8 @@
 
 Reqirements:
 
-Python3 
-PysimpleGUI
-sqlite3
+- Python3 
+- PysimpleGUI
+- sqlite3
+
+
